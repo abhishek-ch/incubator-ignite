@@ -445,6 +445,8 @@ public class TcpClientDiscoverySpi extends TcpDiscoverySpiAdapter implements Tcp
 
                         stats.onClientSocketInitialized(U.currentTimeMillis() - ts);
 
+                        reconFailed = false;
+
                         locNode.clientRouterNodeId(rmtNodeId);
 
                         TcpDiscoveryAbstractMessage msg = recon ?
@@ -1161,22 +1163,18 @@ public class TcpClientDiscoverySpi extends TcpDiscoverySpiAdapter implements Tcp
                     finally {
                         pending = false;
                     }
-
-                    joinErr = null;
-                    reconFailed = false;
-
-                    joinLatch.countDown();
                 }
                 else {
-                    joinErr = null;
                     reconFailed = true;
 
                     getSpiContext().recordEvent(new DiscoveryEvent(locNode,
                         "Client node disconnected: " + locNode,
                         EVT_CLIENT_NODE_DISCONNECTED, locNode));
-
-                    joinLatch.countDown();
                 }
+
+                joinErr = null;
+
+                joinLatch.countDown();
             }
             else if (log.isDebugEnabled())
                 log.debug("Discarding reconnect message for another client: " + msg);
