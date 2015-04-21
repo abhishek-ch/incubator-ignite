@@ -390,11 +390,15 @@ public class GridDiscoveryManager extends GridManagerAdapter<DiscoverySpi> {
 
                     discoCacheHist.put(nextTopVer, cache);
 
-                    boolean set = updateTopologyVersionIfGreater(nextTopVer, cache);
+                    if (type == EVT_NODE_JOINED && locNode.equals(node))
+                        topSnap.set(new Snapshot(nextTopVer, cache));
+                    else {
+                        boolean set = updateTopologyVersionIfGreater(nextTopVer, cache);
 
-                    assert set || topVer == 0 : "Topology version has not been updated [this.topVer=" +
-                        topSnap + ", topVer=" + topVer + ", node=" + node +
-                        ", evt=" + U.gridEventName(type) + ']';
+                        assert set || topVer == 0 : "Topology version has not been updated [this.topVer=" +
+                            topSnap + ", topVer=" + topVer + ", node=" + node +
+                            ", evt=" + U.gridEventName(type) + ']';
+                    }
                 }
 
                 // If this is a local join event, just save it and do not notify listeners.
