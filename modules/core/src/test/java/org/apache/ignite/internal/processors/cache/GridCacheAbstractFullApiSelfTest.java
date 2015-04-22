@@ -139,7 +139,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         CacheConfiguration ccfg = super.cacheConfiguration(gridName);
 
         if (memoryMode() == OFFHEAP_TIERED || memoryMode() == OFFHEAP_VALUES) {
-            ccfg.setMemoryMode(CacheMemoryMode.OFFHEAP_VALUES);
+            ccfg.setMemoryMode(memoryMode());
             ccfg.setOffHeapMaxMemory(0);
         }
 
