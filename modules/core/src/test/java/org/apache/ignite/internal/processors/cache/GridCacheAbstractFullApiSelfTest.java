@@ -2287,9 +2287,9 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
                 String key = String.valueOf(i);
 
                 if (grid(0).affinity(null).mapKeyToPrimaryAndBackups(key).contains(grid(g).localNode()))
-                    assertEquals((Integer)i, jcache(g).localPeek(key, CachePeekMode.ONHEAP));
+                    assertEquals((Integer)i, peek(jcache(g), key));
                 else
-                    assertNull(jcache(g).localPeek(key, CachePeekMode.ONHEAP));
+                    assertNull(peek(jcache(g), key));
             }
         }
     }
@@ -2583,17 +2583,17 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         }
 
         for (String key : keys)
-            assertEquals(vals.get(key), cache.localPeek(key, CachePeekMode.ONHEAP));
+            assertEquals(vals.get(key), peek(cache, key));
 
         cache.clear();
 
         for (String key : keys)
-            assertNull(cache.localPeek(key, CachePeekMode.ONHEAP));
+            assertNull(peek(cache, key));
 
         loadAll(cache, keys, true);
 
         for (String key : keys)
-            assertEquals(vals.get(key), cache.localPeek(key, CachePeekMode.ONHEAP));
+            assertEquals(vals.get(key), peek(cache, key));
     }
 
     /**
@@ -2911,7 +2911,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
         cache.replace("key", 2);
 
-        assert cache.localPeek("key", CachePeekMode.ONHEAP) == 2;
+        assertEquals(2, peek(cache, "key").intValue());
     }
 
     /**
@@ -2943,7 +2943,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
                 cache.remove("key");
 
                 assertNull(cache.get("key")); // localPeek ignores transactions.
-                assertNotNull(cache.localPeek("key")); // localPeek ignores transactions.
+                assertNotNull(peek(cache, "key")); // localPeek ignores transactions.
 
                 tx.commit();
             }
@@ -2959,7 +2959,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         cache.put("key", 1);
         cache.remove("key");
 
-        assertNull(cache.localPeek("key", CachePeekMode.ONHEAP));
+        assertNull(peek(cache, "key"));
     }
 
     /**
@@ -2985,7 +2985,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         // Expired entry should not be swapped.
         cache.localEvict(Collections.singleton(key));
 
-        assertNull(cache.localPeek(key, CachePeekMode.ONHEAP));
+        assertNull(peek(cache, "key"));
 
         cache.localPromote(Collections.singleton(key));
 
@@ -3020,7 +3020,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
         c.put(key, 1);
 
-        assertEquals(Integer.valueOf(1), c.localPeek(key, CachePeekMode.ONHEAP));
+        assertEquals(Integer.valueOf(1), peek(c, key));
 
         int ttl = 500;
 
@@ -3030,7 +3030,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
         Thread.sleep(ttl + 100);
 
-        assert c.localPeek(key, CachePeekMode.ONHEAP) == null;
+        assert peek(c, key) == null;
 
         assert c.localSize() == 0 : "Cache is not empty.";
     }
@@ -3360,15 +3360,15 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         cache.put(key2, 2);
         cache.put(key3, 3);
 
-        assert cache.localPeek(key1, CachePeekMode.ONHEAP) == 1;
-        assert cache.localPeek(key2, CachePeekMode.ONHEAP) == 2;
-        assert cache.localPeek(key3, CachePeekMode.ONHEAP) == 3;
+        assert peek(cache, key1) == 1;
+        assert peek(cache, key2) == 2;
+        assert peek(cache, key3) == 3;
 
         cache.localEvict(F.asList(key1, key2));
 
         assert cache.localPeek(key1, CachePeekMode.ONHEAP) == null;
         assert cache.localPeek(key2, CachePeekMode.ONHEAP) == null;
-        assert cache.localPeek(key3, CachePeekMode.ONHEAP) == 3;
+        assert peek(cache, key3) == 3;
 
         loadAll(cache, ImmutableSet.of(key1, key2), true);
 
