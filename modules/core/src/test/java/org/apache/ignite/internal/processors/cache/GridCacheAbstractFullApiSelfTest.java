@@ -3650,7 +3650,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
      */
     private void checkRemovexInTx(TransactionConcurrency concurrency, TransactionIsolation isolation) throws Exception {
         if (txEnabled()) {
-            final int cnt = 10;
+            final int cnt = 1;
 
             CU.inTx(ignite(0), jcache(), concurrency, isolation, new CIX1<IgniteCache<String, Integer>>() {
                 @Override public void applyx(IgniteCache<String, Integer> cache) {
@@ -3668,10 +3668,21 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
             CU.inTx(ignite(0), jcache(), concurrency, isolation, new CIX1<IgniteCache<String, Integer>>() {
                 @Override public void applyx(IgniteCache<String, Integer> cache) {
-                    for (int i = 0; i < cnt; i++)
+                    for (int i = 0; i < cnt; i++) {
+                        System.out.println("i " + i);
                         assertTrue(cache.remove("key" + i));
+                    }
+
                 }
             });
+
+            CU.inTx(ignite(0), jcache(), concurrency, isolation, new CIX1<IgniteCache<String, Integer>>() {
+                @Override public void applyx(IgniteCache<String, Integer> cache) {
+                    for (int i = 0; i < cnt; i++)
+                        assertNull(cache.get("key" + i));
+                }
+            });
+
         }
     }
 

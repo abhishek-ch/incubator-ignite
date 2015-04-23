@@ -206,8 +206,11 @@ public class GridLocalCache<K, V> extends GridCacheAdapter<K, V> {
     @Override public void removeAll() throws IgniteCheckedException {
         Set<K> keys = new HashSet<>();
 
-        for (Cache.Entry<K, V> e : localEntries(new CachePeekMode[]{CachePeekMode.ALL}))
-            keys.add(e.getKey());
+        if (ctx.offheapTiered()) {
+            for (Iterator<KeyCacheObject> it =
+                         ctx.swap().offHeapKeyIterator(true, true, AffinityTopologyVersion.NONE); it.hasNext(); )
+                keys.add((K)it.next().value(ctx.cacheObjectContext(), false));
+        }
 
         keys.addAll(keySet());
 
