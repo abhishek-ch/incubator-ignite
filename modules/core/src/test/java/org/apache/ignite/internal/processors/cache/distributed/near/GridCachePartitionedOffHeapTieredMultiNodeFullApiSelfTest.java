@@ -24,10 +24,19 @@ import static org.apache.ignite.cache.CacheMemoryMode.*;
 /**
  * Tests partitioned cache with off-heap tiered mode.
  */
-public class GridCachePartitionedOffHeapTieredMultiNodeFullApiSelfTest extends
-    GridCachePartitionedOffHeapMultiNodeFullApiSelfTest {
+public class GridCachePartitionedOffHeapTieredMultiNodeFullApiSelfTest extends GridCachePartitionedFullApiSelfTest {
+    /** {@inheritDoc} */
+    @Override protected int gridCount() {
+        return 4;
+    }
+
     /** {@inheritDoc} */
     @Override protected CacheMemoryMode memoryMode() {
         return OFFHEAP_TIERED;
+    }
+
+    /** {@inheritDoc} */
+    @Override protected boolean nearEnabled() {
+        return false;
     }
 }

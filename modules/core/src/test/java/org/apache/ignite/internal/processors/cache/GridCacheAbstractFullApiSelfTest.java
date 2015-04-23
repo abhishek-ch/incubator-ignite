@@ -22,6 +22,7 @@ import junit.framework.*;
 import org.apache.ignite.*;
 import org.apache.ignite.cache.*;
 import org.apache.ignite.cache.affinity.*;
+import org.apache.ignite.cache.query.*;
 import org.apache.ignite.cluster.*;
 import org.apache.ignite.configuration.*;
 import org.apache.ignite.events.*;
@@ -49,6 +50,7 @@ import java.util.concurrent.locks.*;
 import static java.util.concurrent.TimeUnit.*;
 import static org.apache.ignite.cache.CacheMemoryMode.*;
 import static org.apache.ignite.cache.CacheMode.*;
+import static org.apache.ignite.cache.CachePeekMode.*;
 import static org.apache.ignite.events.EventType.*;
 import static org.apache.ignite.testframework.GridTestUtils.*;
 import static org.apache.ignite.transactions.TransactionConcurrency.*;
@@ -271,7 +273,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
             // Will actually delete entry from map.
             CU.invalidate(jcache(i), "key0");
 
-            assertNull("Failed check for grid: " + i, jcache(i).localPeek("key0", CachePeekMode.ONHEAP));
+            assertNull("Failed check for grid: " + i, jcache(i).localPeek("key0", ONHEAP));
 
             Collection<String> keysCol = mapped.get(grid(i).localNode());
 
@@ -734,7 +736,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         assertNull(cache.get("key3"));
 
         for (int i = 0; i < gridCount(); i++)
-            assertNull("Failed for cache: " + i, jcache(i).localPeek("key3", CachePeekMode.ONHEAP));
+            assertNull("Failed for cache: " + i, jcache(i).localPeek("key3", ONHEAP));
 
         cache.remove("key1");
         cache.put("key2", 1);
@@ -749,7 +751,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         assertNull(cache.get("key3"));
 
         for (int i = 0; i < gridCount(); i++)
-            assertNull(jcache(i).localPeek("key3", CachePeekMode.ONHEAP));
+            assertNull(jcache(i).localPeek("key3", ONHEAP));
     }
 
     /**
@@ -788,7 +790,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         assertNull(cache.get("key3"));
 
         for (int i = 0; i < gridCount(); i++)
-            assertNull("Failed for cache: " + i, jcache(i).localPeek("key3", CachePeekMode.ONHEAP));
+            assertNull("Failed for cache: " + i, jcache(i).localPeek("key3", ONHEAP));
 
         cache.remove("key1");
         cache.put("key2", 1);
@@ -803,7 +805,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         assertNull(cache.get("key3"));
 
         for (int i = 0; i < gridCount(); i++)
-            assertNull(jcache(i).localPeek("key3", CachePeekMode.ONHEAP));
+            assertNull(jcache(i).localPeek("key3", ONHEAP));
     }
 
     /**
@@ -873,9 +875,9 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         Map<String, EntryProcessorResult<String>> res = cache.invokeAll(F.asSet("key1", "key2", "key3"), RMV_PROCESSOR);
 
         for (int i = 0; i < gridCount(); i++) {
-            assertNull(jcache(i).localPeek("key1", CachePeekMode.ONHEAP));
-            assertNull(jcache(i).localPeek("key2", CachePeekMode.ONHEAP));
-            assertNull(jcache(i).localPeek("key3", CachePeekMode.ONHEAP));
+            assertNull(jcache(i).localPeek("key1", ONHEAP));
+            assertNull(jcache(i).localPeek("key2", ONHEAP));
+            assertNull(jcache(i).localPeek("key3", ONHEAP));
         }
 
         assertEquals("null", res.get("key1").get());
@@ -921,7 +923,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
      * @throws Exception If failed.
      */
     public void testTransformAllWithNulls() throws Exception {
-     /*   final IgniteCache<String, Integer> cache = jcache();
+        final IgniteCache<String, Integer> cache = jcache();
 
         GridTestUtils.assertThrows(log, new Callable<Void>() {
             @Override public Void call() throws Exception {
@@ -960,7 +962,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
                     return null;
                 }
             }, NullPointerException.class, null);
-        }*/
+        }
     }
 
     /**
@@ -1078,7 +1080,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
                 tx.close();
         }
 
-        assertEquals((Integer) 3, cache.get("key"));
+        assertEquals((Integer)3, cache.get("key"));
     }
 
     /**
@@ -1231,7 +1233,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         assertNull(cache.get("key3"));
 
         for (int i = 0; i < gridCount(); i++)
-            assertNull(jcache(i).localPeek("key3", CachePeekMode.ONHEAP));
+            assertNull(jcache(i).localPeek("key3", ONHEAP));
     }
 
     /**
@@ -1270,7 +1272,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         assertNull(cache.get("k1"));
 
         for (int i = 0; i < gridCount(); i++)
-            assertNull(jcache(i).localPeek("k1", CachePeekMode.ONHEAP));
+            assertNull(jcache(i).localPeek("k1", ONHEAP));
 
         final EntryProcessor<String, Integer, Integer> errProcessor = new EntryProcessor<String, Integer, Integer>() {
             @Override public Integer process(MutableEntry<String, Integer> e, Object... args) {
@@ -1549,9 +1551,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         }
 
         assertThrows(log, new Callable<Object>() {
-            @Nullable
-            @Override
-            public Object call() throws Exception {
+            @Nullable @Override public Object call() throws Exception {
                 cache.put("key1", null);
 
                 return null;
@@ -1567,9 +1567,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         }, NullPointerException.class, A.NULL_MSG_PREFIX);
 
         assertThrows(log, new Callable<Object>() {
-            @Nullable
-            @Override
-            public Object call() throws Exception {
+            @Nullable @Override public Object call() throws Exception {
                 cache.put(null, 1);
 
                 return null;
@@ -1577,9 +1575,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         }, NullPointerException.class, A.NULL_MSG_PREFIX);
 
         assertThrows(log, new Callable<Object>() {
-            @Nullable
-            @Override
-            public Object call() throws Exception {
+            @Nullable @Override public Object call() throws Exception {
                 cache.replace(null, 1);
 
                 return null;
@@ -1587,9 +1583,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         }, NullPointerException.class, A.NULL_MSG_PREFIX);
 
         assertThrows(log, new Callable<Object>() {
-            @Nullable
-            @Override
-            public Object call() throws Exception {
+            @Nullable @Override public Object call() throws Exception {
                 cache.getAndReplace(null, 1);
 
                 return null;
@@ -1605,9 +1599,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         }, NullPointerException.class, A.NULL_MSG_PREFIX);
 
         assertThrows(log, new Callable<Object>() {
-            @Nullable
-            @Override
-            public Object call() throws Exception {
+            @Nullable @Override public Object call() throws Exception {
                 cache.getAndReplace("key", null);
 
                 return null;
@@ -1615,9 +1607,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         }, NullPointerException.class, A.NULL_MSG_PREFIX);
 
         assertThrows(log, new Callable<Object>() {
-            @Nullable
-            @Override
-            public Object call() throws Exception {
+            @Nullable @Override public Object call() throws Exception {
                 cache.replace(null, 1, 2);
 
                 return null;
@@ -1625,9 +1615,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         }, NullPointerException.class, A.NULL_MSG_PREFIX);
 
         assertThrows(log, new Callable<Object>() {
-            @Nullable
-            @Override
-            public Object call() throws Exception {
+            @Nullable @Override public Object call() throws Exception {
                 cache.replace("key", null, 2);
 
                 return null;
@@ -1705,10 +1693,10 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
         for (int i = 0; i < gridCount(); i++) {
             info("Peek on node [i=" + i + ", id=" + grid(i).localNode().id() + ", val=" +
-                grid(i).cache(null).localPeek("key", CachePeekMode.ONHEAP) + ']');
+                grid(i).cache(null).localPeek("key", ONHEAP) + ']');
         }
 
-        assertEquals((Integer) 1, cache.getAndPutIfAbsent("key", 2));
+        assertEquals((Integer)1, cache.getAndPutIfAbsent("key", 2));
 
         assert cache.get("key") != null;
         assert cache.get("key") == 1;
@@ -1718,7 +1706,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
         cache.localEvict(Collections.singleton("key2"));
 
-        assertEquals((Integer) 1, cache.getAndPutIfAbsent("key2", 3));
+        assertEquals((Integer)1, cache.getAndPutIfAbsent("key2", 3));
 
         // Check db.
         putToStore("key3", 3);
@@ -1787,14 +1775,14 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
         cacheAsync.getAndPutIfAbsent("key2", 3);
 
-        assertEquals((Integer) 1, cacheAsync.<Integer>future().get());
+        assertEquals((Integer)1, cacheAsync.<Integer>future().get());
 
         // Check db.
         putToStore("key3", 3);
 
         cacheAsync.getAndPutIfAbsent("key3", 4);
 
-        assertEquals((Integer) 3, cacheAsync.<Integer>future().get());
+        assertEquals((Integer)3, cacheAsync.<Integer>future().get());
 
         cache.localEvict(Collections.singleton("key2"));
 
@@ -2014,10 +2002,10 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
         for (int i = 0; i < gridCount(); i++) {
             info("Peek key on grid [i=" + i + ", nodeId=" + grid(i).localNode().id() +
-                ", peekVal=" + grid(i).cache(null).localPeek("key", CachePeekMode.ONHEAP) + ']');
+                ", peekVal=" + grid(i).cache(null).localPeek("key", ONHEAP) + ']');
 
             info("Peek key2 on grid [i=" + i + ", nodeId=" + grid(i).localNode().id() +
-                ", peekVal=" + grid(i).cache(null).localPeek("key2", CachePeekMode.ONHEAP) + ']');
+                ", peekVal=" + grid(i).cache(null).localPeek("key2", ONHEAP) + ']');
         }
 
         assertEquals((Integer)6, cache.get("key2"));
@@ -2246,7 +2234,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
      * @throws Exception If failed.
      */
     public void testDeletedEntriesFlag() throws Exception {
-        if (cacheMode() != LOCAL && cacheMode() != REPLICATED) {
+        if (cacheMode() != LOCAL && cacheMode() != REPLICATED && memoryMode() != OFFHEAP_TIERED) {
             int cnt = 3;
 
             IgniteCache<String, Integer> cache = jcache();
@@ -2263,8 +2251,8 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
                     GridCacheContext<String, Integer> cctx = context(g);
 
-                    GridCacheEntryEx entry = cctx.isNear() ? cctx.near().dht().entryEx(key) :
-                        cctx.cache().entryEx(key);
+                    GridCacheEntryEx entry = cctx.isNear() ? cctx.near().dht().peekEx(key) :
+                        cctx.cache().peekEx(key);
 
                     if (grid(0).affinity(null).mapKeyToPrimaryAndBackups(key).contains(grid(g).localNode())) {
                         assertNotNull(entry);
@@ -2480,7 +2468,8 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         c.add(null);
 
         GridTestUtils.assertThrows(log, new Callable<Void>() {
-            @Override public Void call() throws Exception {
+            @Override
+            public Void call() throws Exception {
                 cache.removeAll(c);
 
                 return null;
@@ -2581,7 +2570,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         Set<String> keys = new HashSet<>(primaryKeysForCache(cache, 2));
 
         for (String key : keys)
-            assertNull(cache.localPeek(key, CachePeekMode.ONHEAP));
+            assertNull(cache.localPeek(key, ONHEAP));
 
         Map<String, Integer> vals = new HashMap<>();
 
@@ -2715,7 +2704,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
             try {
                 cache.clear();
 
-                assertEquals(vals.get(first), peek(cache, first));
+                assertEquals(vals.get(first), cache.localPeek(first, ONHEAP));
             }
             finally {
                 lock.unlock();
@@ -2746,14 +2735,14 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
         cache.localEvict(Sets.union(ImmutableSet.of("key1", "key2"), keys));
 
-        assert cache.localSize(CachePeekMode.ONHEAP) == 0;
+        assert cache.localSize(ONHEAP) == 0;
 
         cache.clear();
 
         cache.localPromote(ImmutableSet.of("key2", "key1"));
 
-        assert cache.localPeek("key1", CachePeekMode.ONHEAP) == null;
-        assert cache.localPeek("key2", CachePeekMode.ONHEAP) == null;
+        assert cache.localPeek("key1", ONHEAP) == null;
+        assert cache.localPeek("key2", ONHEAP) == null;
     }
 
     /**
@@ -2918,7 +2907,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         Ignite ignite = primaryIgnite("key");
         IgniteCache<String, Integer> cache = ignite.cache(null);
 
-        assert cache.localPeek("key", CachePeekMode.ONHEAP) == null;
+        assert cache.localPeek("key", ONHEAP) == null;
 
         cache.put("key", 1);
 
@@ -3002,7 +2991,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
         cache.localPromote(Collections.singleton(key));
 
-        assertNull(cache.localPeek(key, CachePeekMode.ONHEAP));
+        assertNull(cache.localPeek(key, ONHEAP));
 
         assertTrue(cache.localSize() == 0);
 
@@ -3070,7 +3059,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
             Thread.sleep(ttl + 100);
 
-            assertNull(c.localPeek(key, CachePeekMode.ONHEAP));
+            assertNull(c.localPeek(key, ONHEAP));
 
             assert c.localSize() == 0;
         }
@@ -3382,8 +3371,8 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
         cache.localEvict(F.asList(key1, key2));
 
-        assert cache.localPeek(key1, CachePeekMode.ONHEAP) == null;
-        assert cache.localPeek(key2, CachePeekMode.ONHEAP) == null;
+        assert cache.localPeek(key1, ONHEAP) == null;
+        assert cache.localPeek(key2, ONHEAP) == null;
         assert peek(cache, key3) == 3;
 
         loadAll(cache, ImmutableSet.of(key1, key2), true);
@@ -3456,14 +3445,14 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         cache.localEvict(F.asList(k2, k3));
 
         if (memoryMode() == OFFHEAP_TIERED) {
-            assertNotNull(cache.localPeek(k1, CachePeekMode.ONHEAP, CachePeekMode.OFFHEAP));
-            assertNotNull(cache.localPeek(k2, CachePeekMode.ONHEAP, CachePeekMode.OFFHEAP));
-            assertNotNull(cache.localPeek(k3, CachePeekMode.ONHEAP, CachePeekMode.OFFHEAP));
+            assertNotNull(cache.localPeek(k1, ONHEAP, CachePeekMode.OFFHEAP));
+            assertNotNull(cache.localPeek(k2, ONHEAP, CachePeekMode.OFFHEAP));
+            assertNotNull(cache.localPeek(k3, ONHEAP, CachePeekMode.OFFHEAP));
         }
         else {
-            assertNotNull(cache.localPeek(k1, CachePeekMode.ONHEAP, CachePeekMode.OFFHEAP));
-            assertNull(cache.localPeek(k2, CachePeekMode.ONHEAP, CachePeekMode.OFFHEAP));
-            assertNull(cache.localPeek(k3, CachePeekMode.ONHEAP, CachePeekMode.OFFHEAP));
+            assertNotNull(cache.localPeek(k1, ONHEAP, CachePeekMode.OFFHEAP));
+            assertNull(cache.localPeek(k2, ONHEAP, CachePeekMode.OFFHEAP));
+            assertNull(cache.localPeek(k3, ONHEAP, CachePeekMode.OFFHEAP));
         }
 
         int cnt = 0;
@@ -3529,14 +3518,14 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         cache.localEvict(Collections.singleton(k3));
 
         if (memoryMode() == OFFHEAP_TIERED) {
-            assertNotNull(cache.localPeek(k1, CachePeekMode.ONHEAP, CachePeekMode.OFFHEAP));
-            assertNotNull(cache.localPeek(k2, CachePeekMode.ONHEAP, CachePeekMode.OFFHEAP));
-            assertNotNull(cache.localPeek(k3, CachePeekMode.ONHEAP, CachePeekMode.OFFHEAP));
+            assertNotNull(cache.localPeek(k1, ONHEAP, CachePeekMode.OFFHEAP));
+            assertNotNull(cache.localPeek(k2, ONHEAP, CachePeekMode.OFFHEAP));
+            assertNotNull(cache.localPeek(k3, ONHEAP, CachePeekMode.OFFHEAP));
         }
         else {
-            assertNotNull(cache.localPeek(k1, CachePeekMode.ONHEAP, CachePeekMode.OFFHEAP));
-            assertNull(cache.localPeek(k2, CachePeekMode.ONHEAP, CachePeekMode.OFFHEAP));
-            assertNull(cache.localPeek(k3, CachePeekMode.ONHEAP, CachePeekMode.OFFHEAP));
+            assertNotNull(cache.localPeek(k1, ONHEAP, CachePeekMode.OFFHEAP));
+            assertNull(cache.localPeek(k2, ONHEAP, CachePeekMode.OFFHEAP));
+            assertNull(cache.localPeek(k3, ONHEAP, CachePeekMode.OFFHEAP));
         }
 
         cache.localPromote(F.asSet(k2, k3));
@@ -3585,7 +3574,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         Thread.sleep(ttl + 100);
 
         // Peek will actually remove entry from cache.
-        assertNull(cache.localPeek(key, CachePeekMode.ONHEAP));
+        assertNull(cache.localPeek(key, ONHEAP));
 
         assert cache.localSize() == 0;
 
@@ -3773,6 +3762,9 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
      * @throws Exception If failed.
      */
     protected void checkSize(Collection<String> keys) throws Exception {
+        if (memoryMode() == OFFHEAP_TIERED)
+            return;
+
         if (nearEnabled())
             assertEquals(keys.size(), jcache().localSize(CachePeekMode.ALL));
         else {

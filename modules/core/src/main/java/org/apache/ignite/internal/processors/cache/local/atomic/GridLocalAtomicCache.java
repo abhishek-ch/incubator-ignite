@@ -384,8 +384,10 @@ public class GridLocalAtomicCache<K, V> extends GridCacheAdapter<K, V> {
     @Override public void removeAll() throws IgniteCheckedException {
         Set<K> keys = new HashSet<>();
 
-        for (Cache.Entry<K, V> e: localEntries(new CachePeekMode[]{CachePeekMode.ALL}))
+        for (Cache.Entry<K, V> e : localEntries(new CachePeekMode[]{CachePeekMode.ALL}))
             keys.add(e.getKey());
+
+        keys.addAll(keySet());
 
         removeAll(keys);
     }
