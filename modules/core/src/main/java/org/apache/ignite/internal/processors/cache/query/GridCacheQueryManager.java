@@ -774,6 +774,9 @@ public abstract class GridCacheQueryManager<K, V> extends GridCacheManagerAdapte
 
         final ExpiryPolicy plc = cctx.expiry();
 
+        Set<Integer> parts = qry.includeBackups() || cctx.isReplicated() ? null :
+            cctx.affinity().primaryPartitions(cctx.nodeId(), cctx.affinity().affinityTopologyVersion());
+
         final GridCloseableIteratorAdapter<IgniteBiTuple<K, V>> heapIt = new GridCloseableIteratorAdapter<IgniteBiTuple<K, V>>() {
             private IgniteBiTuple<K, V> next;
 
@@ -876,7 +879,7 @@ public abstract class GridCacheQueryManager<K, V> extends GridCacheManagerAdapte
             iters.add(heapIt);
 
             if (cctx.isOffHeapEnabled())
-                iters.add(offheapIterator(qry));
+                iters.add(offheapIterator(qry, parts));
 
             if (cctx.swap().swapEnabled())
                 iters.add(swapIterator(qry));
@@ -929,7 +932,8 @@ public abstract class GridCacheQueryManager<K, V> extends GridCacheManagerAdapte
      * @param qry Query.
      * @return Offheap iterator.
      */
-    private GridIterator<IgniteBiTuple<K, V>> offheapIterator(GridCacheQueryAdapter<?> qry) {
+    private GridIterator<IgniteBiTuple<K, V>> offheapIterator(GridCacheQueryAdapter<?> qry, Set<Integer> parts)
+        throws IgniteCheckedException {
         IgniteBiPredicate<K, V> filter = qry.scanFilter();
 
         if (cctx.offheapTiered() && filter != null) {
@@ -938,7 +942,19 @@ public abstract class GridCacheQueryManager<K, V> extends GridCacheManagerAdapte
             return cctx.swap().rawOffHeapIterator(c);
         }
         else {
-            Iterator<Map.Entry<byte[], byte[]>> it = cctx.swap().rawOffHeapIterator();
+            Iterator<Map.Entry<byte[], byte[]>> it;
+
+            if (parts == null)
+                it = cctx.swap().rawOffHeapIterator();
+            else {
+                List<GridIterator<Map.Entry<byte[], byte[]>>> partIts = new ArrayList<>();
+
+                for (Integer part : parts)
+                    partIts.add(cctx.swap().rawOffHeapIterator(part));
+
+                it = new CompoundIterator(partIts);
+            }
+
 
             return scanIterator(it, filter, qry.keepPortable());
         }
@@ -2476,7 +2492,7 @@ public abstract class GridCacheQueryManager<K, V> extends GridCacheManagerAdapte
          * @param keepPortable Keep portable flag.
          */
         private OffheapIteratorClosure(
-            @Nullable IgniteBiPredicate<K, V> filter,
+            IgniteBiPredicate<K, V> filter,
             boolean keepPortable) {
             assert filter != null;
 

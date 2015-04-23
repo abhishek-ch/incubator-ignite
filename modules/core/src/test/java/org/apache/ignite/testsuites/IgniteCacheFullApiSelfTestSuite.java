@@ -34,7 +34,7 @@ public class IgniteCacheFullApiSelfTestSuite extends TestSuite {
     public static TestSuite suite() throws Exception {
         TestSuite suite = new TestSuite("Cache Full API Test Suite");
 
-        // One node.
+       /* // One node.
         suite.addTestSuite(GridCacheLocalFullApiSelfTest.class);
         suite.addTestSuite(GridCacheLocalAtomicFullApiSelfTest.class);
         suite.addTestSuite(GridCacheReplicatedFullApiSelfTest.class);
@@ -58,7 +58,7 @@ public class IgniteCacheFullApiSelfTestSuite extends TestSuite {
         suite.addTestSuite(GridCachePartitionedOffHeapFullApiSelfTest.class);
         suite.addTestSuite(GridCacheAtomicOffHeapFullApiSelfTest.class);
         suite.addTestSuite(GridCacheAtomicPrimaryWriteOrderOffHeapFullApiSelfTest.class);
-        suite.addTestSuite(GridCachePartitionedNearDisabledOffHeapFullApiSelfTest.class);
+        suite.addTestSuite(GridCachePartitionedNearDisabledOffHeapFullApiSelfTest.class);*/
 
         // One node with off-heap tiered mode.
         suite.addTestSuite(GridCacheLocalOffHeapTieredFullApiSelfTest.class);
@@ -69,7 +69,7 @@ public class IgniteCacheFullApiSelfTestSuite extends TestSuite {
         suite.addTestSuite(GridCacheAtomicPrimaryWriteOrderOffHeapTieredFullApiSelfTest.class);
         suite.addTestSuite(GridCachePartitionedNearDisabledOffHeapTieredFullApiSelfTest.class);
 
-        // Multi-node.
+        /*// Multi-node.
         suite.addTestSuite(GridCacheReplicatedMultiNodeFullApiSelfTest.class);
         suite.addTestSuite(GridCacheReplicatedMultiNodeP2PDisabledFullApiSelfTest.class);
         suite.addTestSuite(GridCacheReplicatedAtomicMultiNodeFullApiSelfTest.class);
@@ -119,7 +119,7 @@ public class IgniteCacheFullApiSelfTestSuite extends TestSuite {
         suite.addTestSuite(GridCachePartitionedOffHeapMultiNodeFullApiSelfTest.class);
         suite.addTestSuite(GridCacheAtomicOffHeapMultiNodeFullApiSelfTest.class);
         suite.addTestSuite(GridCacheAtomicPrimaryWrityOrderOffHeapMultiNodeFullApiSelfTest.class);
-        suite.addTestSuite(GridCachePartitionedNearDisabledOffHeapMultiNodeFullApiSelfTest.class);
+        suite.addTestSuite(GridCachePartitionedNearDisabledOffHeapMultiNodeFullApiSelfTest.class);*/
 
         // Multi-node with off-heap tiered mode.
         suite.addTestSuite(GridCacheReplicatedOffHeapTieredMultiNodeFullApiSelfTest.class);
@@ -128,11 +128,11 @@ public class IgniteCacheFullApiSelfTestSuite extends TestSuite {
         suite.addTestSuite(GridCacheAtomicPrimaryWrityOrderOffHeapTieredMultiNodeFullApiSelfTest.class);
         suite.addTestSuite(GridCachePartitionedNearDisabledOffHeapTieredMultiNodeFullApiSelfTest.class);
 
-        // Private cache API.
+        /*// Private cache API.
         suite.addTestSuite(GridCacheExLocalFullApiSelfTest.class);
         suite.addTestSuite(GridCacheExReplicatedFullApiSelfTest.class);
         suite.addTestSuite(GridCacheExNearFullApiSelfTest.class);
-        suite.addTestSuite(GridCacheExColocatedFullApiSelfTest.class);
+        suite.addTestSuite(GridCacheExColocatedFullApiSelfTest.class);*/
 
 //        Multithreaded // TODO: GG-708
 //        suite.addTestSuite(GridCacheLocalFullApiMultithreadedSelfTest.class);

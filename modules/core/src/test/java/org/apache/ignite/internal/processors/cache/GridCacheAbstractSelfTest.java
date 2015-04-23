@@ -110,7 +110,7 @@ public abstract class GridCacheAbstractSelfTest extends GridCommonAbstractTest {
             while (true) {
                 try {
                     final int fi = i;
-
+                    jcache(fi).localSize(CachePeekMode.ALL);
                     assertTrue(
                         "Cache is not empty: " + " localSize = " + jcache(fi).localSize(CachePeekMode.ALL)
                         + ", local entries " + entrySet(jcache(fi).localEntries()),
@@ -124,6 +124,8 @@ public abstract class GridCacheAbstractSelfTest extends GridCommonAbstractTest {
                                         for (Cache.Entry<String, ?> k : jcache(fi).localEntries())
                                             jcache(fi).remove(k.getKey());
                                     }
+
+                                    jcache(fi).localSize(CachePeekMode.ALL);
 
                                     return jcache(fi).localSize(CachePeekMode.ALL) == 0;
                                 }
@@ -393,8 +395,8 @@ public abstract class GridCacheAbstractSelfTest extends GridCommonAbstractTest {
      * @throws Exception If failed.
      */
     @Nullable protected <K, V> V peek(IgniteCache<K, V> cache, K key) throws Exception {
-        return offheapTiered(cache) ? cache.localPeek(key, CachePeekMode.SWAP, CachePeekMode.OFFHEAP) : cache.localPeek(key,
-            CachePeekMode.ONHEAP);
+        return offheapTiered(cache) ? cache.localPeek(key, CachePeekMode.SWAP, CachePeekMode.OFFHEAP) :
+            cache.localPeek(key, CachePeekMode.ONHEAP);
     }
 
     /**

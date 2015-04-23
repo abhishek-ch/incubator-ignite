@@ -18,6 +18,7 @@
 package org.apache.ignite.internal.processors.cache.local;
 
 import org.apache.ignite.*;
+import org.apache.ignite.cache.*;
 import org.apache.ignite.internal.*;
 import org.apache.ignite.internal.processors.affinity.*;
 import org.apache.ignite.internal.processors.cache.*;
@@ -29,6 +30,7 @@ import org.apache.ignite.internal.util.typedef.internal.*;
 import org.apache.ignite.transactions.*;
 import org.jetbrains.annotations.*;
 
+import javax.cache.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -202,7 +204,14 @@ public class GridLocalCache<K, V> extends GridCacheAdapter<K, V> {
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override public void removeAll() throws IgniteCheckedException {
-        removeAll(keySet());
+        Set<K> keys = new HashSet<>();
+
+        for (Cache.Entry<K, V> e : localEntries(new CachePeekMode[]{CachePeekMode.ALL}))
+            keys.add(e.getKey());
+
+        keys.addAll(keySet());
+
+        removeAll(keys);
     }
 
     /** {@inheritDoc} */

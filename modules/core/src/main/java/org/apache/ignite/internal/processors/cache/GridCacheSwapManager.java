@@ -1615,6 +1615,40 @@ public class GridCacheSwapManager extends GridCacheManagerAdapter {
     }
 
     /**
+     * @return Raw off-heap iterator.
+     */
+    public GridCloseableIterator<Map.Entry<byte[], byte[]>> rawOffHeapIterator(final int part) {
+        if (!offheapEnabled)
+            return new GridEmptyCloseableIterator<>();
+
+        return new GridCloseableIteratorAdapter<Map.Entry<byte[], byte[]>>() {
+            private GridCloseableIterator<IgniteBiTuple<byte[], byte[]>> it = offheap.iterator(spaceName, part);
+
+            private Map.Entry<byte[], byte[]> cur;
+
+            @Override protected Map.Entry<byte[], byte[]> onNext() {
+                return cur = it.next();
+            }
+
+            @Override protected boolean onHasNext() {
+                return it.hasNext();
+            }
+
+            @Override protected void onRemove() throws IgniteCheckedException {
+                KeyCacheObject key = cctx.toCacheKeyObject(cur.getKey());
+
+                int part = cctx.affinity().partition(key);
+
+                offheap.removex(spaceName, part, key, key.valueBytes(cctx.cacheObjectContext()));
+            }
+
+            @Override protected void onClose() throws IgniteCheckedException {
+                it.close();
+            }
+        };
+    }
+
+    /**
      * Gets swap space iterator over partition.
      *
      * @param part Partition to iterate over.

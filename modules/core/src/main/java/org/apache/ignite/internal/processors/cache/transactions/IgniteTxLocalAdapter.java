@@ -2939,7 +2939,7 @@ public abstract class IgniteTxLocalAdapter extends IgniteTxAdapter
                             throws IgniteCheckedException {
                             txFut.get();
 
-                            return (GridCacheReturn)implicitRes;
+                            return implicitRes;
                         }
                     }));
                 }
