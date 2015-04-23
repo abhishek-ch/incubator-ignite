@@ -123,7 +123,7 @@ public class IgniteCacheFullApiSelfTestSuite extends TestSuite {
 
         // Multi-node with off-heap tiered mode.
         suite.addTestSuite(GridCacheReplicatedOffHeapTieredMultiNodeFullApiSelfTest.class);
-        suite.addTestSuite(GridCachePartitionedOffHeapTieredMultiNodeFullApiSelfTest.class);
+        //suite.addTestSuite(GridCachePartitionedOffHeapTieredMultiNodeFullApiSelfTest.class);
         suite.addTestSuite(GridCacheAtomicOffHeapTieredMultiNodeFullApiSelfTest.class);
         suite.addTestSuite(GridCacheAtomicPrimaryWrityOrderOffHeapTieredMultiNodeFullApiSelfTest.class);
         suite.addTestSuite(GridCachePartitionedNearDisabledOffHeapTieredMultiNodeFullApiSelfTest.class);
