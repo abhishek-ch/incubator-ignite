@@ -18,6 +18,7 @@
 package org.apache.ignite.internal.processors.datastreamer;
 
 import org.apache.ignite.*;
+import org.apache.ignite.cluster.*;
 import org.apache.ignite.internal.*;
 import org.apache.ignite.internal.managers.communication.*;
 import org.apache.ignite.internal.managers.deployment.*;
@@ -37,7 +38,6 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static org.apache.ignite.internal.GridTopic.*;
-import static org.apache.ignite.internal.IgniteNodeAttributes.*;
 import static org.apache.ignite.internal.managers.communication.GridIoPolicy.*;
 
 /**
@@ -45,7 +45,7 @@ import static org.apache.ignite.internal.managers.communication.GridIoPolicy.*;
  */
 public class DataStreamProcessor<K, V> extends GridProcessorAdapter {
     /** The lowest version of ignite that is compatible with current version. */
-    private static IgniteProductVersion COMPATIBLE_VERSION_SINCE = IgniteProductVersion.fromString("1.0.4");
+    private static IgniteProductVersion COMPATIBLE_VERSION_SINCE = IgniteProductVersion.fromString("1.1.0");
 
     /** Loaders map (access is not supposed to be highly concurrent). */
     private Collection<DataStreamerImpl> ldrs = new GridConcurrentHashSet<>();
@@ -195,9 +195,10 @@ public class DataStreamProcessor<K, V> extends GridProcessorAdapter {
             AffinityTopologyVersion rmtAffVer = req.topologyVersion();
 
             if (rmtAffVer == null) {
-                IgniteProductVersion rmtVer = ctx.discovery().node(nodeId).version();
+                ClusterNode rmtNode =  ctx.discovery().node(nodeId);
 
-                assert rmtVer.compareTo(COMPATIBLE_VERSION_SINCE) < 0;
+                if (rmtNode != null)
+                    assert rmtNode.version().compareTo(COMPATIBLE_VERSION_SINCE) < 0;
             }
             else {
                 if (locAffVer.compareTo(rmtAffVer) < 0) {
