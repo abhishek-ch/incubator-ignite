@@ -18,21 +18,25 @@
 package org.apache.ignite.internal.processors.cache.distributed;
 
 import org.apache.ignite.*;
-import org.apache.ignite.cache.*;
 import org.apache.ignite.cache.store.*;
 import org.apache.ignite.configuration.*;
 import org.apache.ignite.internal.*;
+import org.apache.ignite.internal.util.typedef.internal.*;
 import org.apache.ignite.lang.*;
 import org.apache.ignite.testframework.*;
 import org.apache.ignite.testframework.junits.common.*;
+
 import org.jetbrains.annotations.*;
 
 import javax.cache.*;
 import javax.cache.configuration.*;
 import javax.cache.integration.*;
+import java.io.*;
 import java.util.concurrent.*;
 
+import static org.apache.ignite.cache.CacheAtomicityMode.*;
 import static org.apache.ignite.cache.CacheMode.*;
+import static org.apache.ignite.cache.CacheRebalanceMode.*;
 
 /**
  * Tests for cache data loading during simultaneous grids start.
@@ -42,7 +46,7 @@ public class GridCacheLoadingConcurrentGridStartTest extends GridCommonAbstractT
     private static int GRIDS_CNT = 5;
 
     /** Keys count */
-    private static int KEYS_CNT = 1_000_000;
+    private static int KEYS_CNT = 100_000;
 
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
@@ -53,26 +57,13 @@ public class GridCacheLoadingConcurrentGridStartTest extends GridCommonAbstractT
 
         ccfg.setCacheMode(PARTITIONED);
 
+        ccfg.setAtomicityMode(ATOMIC);
+
+        ccfg.setRebalanceMode(SYNC);
+
         ccfg.setBackups(1);
 
-        CacheStore<Integer, String> store = new CacheStoreAdapter<Integer, String>() {
-            @Override public void loadCache(IgniteBiInClosure<Integer, String> f, Object... args) {
-                for (int i = 0; i < KEYS_CNT; i++)
-                    f.apply(i, Integer.toString(i));
-            }
-
-            @Nullable @Override public String load(Integer i) throws CacheLoaderException {
-                return null;
-            }
-
-            @Override public void write(Cache.Entry<? extends Integer, ? extends String> entry) throws CacheWriterException {
-                // No-op.
-            }
-
-            @Override public void delete(Object o) throws CacheWriterException {
-                // No-op.
-            }
-        };
+        CacheStore<Integer, String> store = new TestCacheStoreAdapter();
 
         ccfg.setCacheStoreFactory(new FactoryBuilder.SingletonFactory(store));
 
@@ -92,9 +83,22 @@ public class GridCacheLoadingConcurrentGridStartTest extends GridCommonAbstractT
     public void testLoadCacheWithDataStreamer() throws Exception {
         IgniteInClosure<Ignite> f = new IgniteInClosure<Ignite>() {
             @Override public void apply(Ignite grid) {
+
                 try (IgniteDataStreamer<Integer, String> dataStreamer = grid.dataStreamer(null)) {
+//                    dataStreamer.perNodeParallelOperations(2);
+                    dataStreamer.perNodeBufferSize(64);
+
                     for (int i = 0; i < KEYS_CNT; i++)
                         dataStreamer.addData(i, Integer.toString(i));
+
+/*
+                    try {
+                        Thread.sleep(5000);
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+*/
                 }
             }
         };
@@ -142,13 +146,46 @@ public class GridCacheLoadingConcurrentGridStartTest extends GridCommonAbstractT
     private void assertCacheSize() {
         IgniteCache<Integer, String> cache = grid(0).cache(null);
 
-        assertEquals(KEYS_CNT, cache.size(CachePeekMode.PRIMARY));
-
         int total = 0;
 
-        for (int i = 0; i < GRIDS_CNT; i++)
-            total += grid(i).cache(null).localSize(CachePeekMode.PRIMARY);
+        for (int i = 0; i < GRIDS_CNT; i++) {
+            int locSize = grid(i).cache(null).localSize();
+
+            System.out.println("!!! Local size(" + i + "): " + locSize);
+
+            total += locSize;
+
+        }
 
         assertEquals(KEYS_CNT, total);
+
+        assertEquals(KEYS_CNT, cache.size());
+    }
+
+    /**
+     * Cache store adapter.
+     */
+    private static class TestCacheStoreAdapter extends CacheStoreAdapter<Integer, String> implements Serializable {
+        /** {@inheritDoc} */
+        @Override public void loadCache(IgniteBiInClosure<Integer, String> f, Object... args) {
+            for (int i = 0; i < KEYS_CNT; i++)
+                f.apply(i, Integer.toString(i));
+        }
+
+        /** {@inheritDoc} */
+        @Nullable @Override public String load(Integer i) throws CacheLoaderException {
+            return null;
+        }
+
+        /** {@inheritDoc} */
+        @Override public void write(Cache.Entry<? extends Integer, ? extends String> entry)
+            throws CacheWriterException {
+            // No-op.
+        }
+
+        /** {@inheritDoc} */
+        @Override public void delete(Object o) throws CacheWriterException {
+            // No-op.
+        }
     }
 }

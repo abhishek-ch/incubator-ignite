@@ -410,6 +410,11 @@ public abstract class GridDhtCacheAdapter<K, V> extends GridDistributedCacheAdap
                 @Override public void apply(KeyCacheObject key, Object val, @Nullable GridCacheVersion ver) {
                     assert ver == null;
 
+/*
+                    if (!topVer.equals(topology().topologyVersion()))
+                        throw new ClusterTopologyException("Topology changed");
+*/
+
                     loadEntry(key, val, ver0, p, topVer, replicate, plc);
                 }
             }, args);
@@ -476,12 +481,14 @@ public abstract class GridDhtCacheAdapter<K, V> extends GridDistributedCacheAdap
                 }
             }
             else if (log.isDebugEnabled())
-                log.debug("Will node load entry into cache (partition is invalid): " + part);
+                    log.debug("Will node load entry into cache (partition is invalid): " + part);
         }
         catch (GridDhtInvalidPartitionException e) {
             if (log.isDebugEnabled())
                 log.debug("Ignoring entry for partition that does not belong [key=" + key + ", val=" + val +
                     ", err=" + e + ']');
+
+            throw e;
         }
     }
 

@@ -1421,8 +1421,8 @@ public class DataStreamerImpl<K, V> implements IgniteDataStreamer<K, V>, Delayed
 
                     cctx.evicts().touch(entry, topVer);
                 }
-                catch (GridDhtInvalidPartitionException | GridCacheEntryRemovedException ignored) {
-                    // No-op.
+                catch (GridDhtInvalidPartitionException | GridCacheEntryRemovedException ignored){
+                    ignored.printStackTrace();
                 }
                 catch (IgniteCheckedException ex) {
                     IgniteLogger log = cache.unwrap(Ignite.class).log();
