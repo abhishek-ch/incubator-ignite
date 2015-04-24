@@ -2018,6 +2018,14 @@ public abstract class IgniteTxLocalAdapter extends IgniteTxAdapter
         assert cached == null || keys.size() == 1;
         assert cached == null || F.first(keys).equals(cached.key());
 
+        for (Object key : keys) {
+            if (key == null) {
+                setRollbackOnly();
+
+                throw new NullPointerException("Null key.");
+            }
+        }
+
         try {
             addActiveCache(cacheCtx);
         }
@@ -2039,12 +2047,6 @@ public abstract class IgniteTxLocalAdapter extends IgniteTxAdapter
             groupLockSanityCheck(cacheCtx, keys);
 
             for (Object key : keys) {
-                if (key == null) {
-                    setRollbackOnly();
-
-                    throw new NullPointerException("Null key.");
-                }
-
                 Object val = rmv || lookup == null ? null : lookup.get(key);
                 EntryProcessor entryProcessor = invokeMap == null ? null : invokeMap.get(key);
 

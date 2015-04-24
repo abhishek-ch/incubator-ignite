@@ -1386,11 +1386,13 @@ public class GridLocalAtomicCache<K, V> extends GridCacheAdapter<K, V> {
     private List<GridCacheEntryEx> lockEntries(Collection<? extends K> keys) {
         List<GridCacheEntryEx> locked = new ArrayList<>(keys.size());
 
+        for (K key : keys) {
+            if (key == null)
+                throw new NullPointerException("Null key.");
+        }
+
         while (true) {
             for (K key : keys) {
-                if (key == null)
-                    throw new NullPointerException("Null key.");
-
                 GridCacheEntryEx entry = entryEx(ctx.toCacheKeyObject(key));
 
                 locked.add(entry);

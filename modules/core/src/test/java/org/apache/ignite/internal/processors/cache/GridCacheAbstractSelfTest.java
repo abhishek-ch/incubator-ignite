@@ -110,7 +110,7 @@ public abstract class GridCacheAbstractSelfTest extends GridCommonAbstractTest {
             while (true) {
                 try {
                     final int fi = i;
-                    jcache(fi).localSize(CachePeekMode.ALL);
+
                     assertTrue(
                         "Cache is not empty: " + " localSize = " + jcache(fi).localSize(CachePeekMode.ALL)
                         + ", local entries " + entrySet(jcache(fi).localEntries()),
