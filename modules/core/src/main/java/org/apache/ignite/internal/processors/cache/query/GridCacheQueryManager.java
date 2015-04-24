@@ -2497,7 +2497,7 @@ public abstract class GridCacheQueryManager<K, V> extends GridCacheManagerAdapte
          * @param keepPortable Keep portable flag.
          */
         private OffheapIteratorClosure(
-            IgniteBiPredicate<K, V> filter,
+            @Nullable IgniteBiPredicate<K, V> filter,
             boolean keepPortable) {
             assert filter != null;
 

@@ -3670,11 +3670,8 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
             CU.inTx(ignite(0), jcache(), concurrency, isolation, new CIX1<IgniteCache<String, Integer>>() {
                 @Override public void applyx(IgniteCache<String, Integer> cache) {
-                    for (int i = 0; i < cnt; i++) {
-                        System.out.println("i " + i);
+                    for (int i = 0; i < cnt; i++)
                         assertTrue(cache.remove("key" + i));
-                    }
-
                 }
             });
 
@@ -3684,7 +3681,6 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
                         assertNull(cache.get("key" + i));
                 }
             });
-
         }
     }
 
@@ -4002,7 +3998,8 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         iter.remove();
 
         GridTestUtils.assertThrows(log, new Callable<Object>() {
-            @Override public Void call() throws Exception {
+            @Override
+            public Void call() throws Exception {
                 iter.remove();
 
                 return null;
@@ -4585,17 +4582,17 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
             for (int i = 0; i < keys.size(); i++)
                 data.put(keys.get(i), i);
 
-            checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, OPTIMISTIC, READ_COMMITTED);
+            /* checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, OPTIMISTIC, READ_COMMITTED);
 
             checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, OPTIMISTIC, REPEATABLE_READ);
 
-            checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, OPTIMISTIC, SERIALIZABLE);
+            checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, OPTIMISTIC, SERIALIZABLE);*/
 
-            //checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, PESSIMISTIC, READ_COMMITTED);
+            checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, PESSIMISTIC, READ_COMMITTED);
+/*
+            checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, PESSIMISTIC, REPEATABLE_READ);
 
-            //checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, PESSIMISTIC, REPEATABLE_READ);
-
-            checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, PESSIMISTIC, SERIALIZABLE);
+            checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, PESSIMISTIC, SERIALIZABLE);*/
         }
     }
 

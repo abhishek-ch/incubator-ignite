@@ -18,7 +18,6 @@
 package org.apache.ignite.internal.processors.cache.local;
 
 import org.apache.ignite.*;
-import org.apache.ignite.cache.*;
 import org.apache.ignite.internal.*;
 import org.apache.ignite.internal.processors.affinity.*;
 import org.apache.ignite.internal.processors.cache.*;
@@ -30,7 +29,6 @@ import org.apache.ignite.internal.util.typedef.internal.*;
 import org.apache.ignite.transactions.*;
 import org.jetbrains.annotations.*;
 
-import javax.cache.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
