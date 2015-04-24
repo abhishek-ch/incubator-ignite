@@ -27,6 +27,7 @@ import org.apache.ignite.internal.util.*;
 import org.apache.ignite.internal.util.typedef.*;
 import org.apache.ignite.internal.util.typedef.internal.*;
 import org.apache.ignite.internal.util.worker.*;
+import org.apache.ignite.lang.*;
 import org.apache.ignite.marshaller.*;
 import org.apache.ignite.stream.*;
 import org.apache.ignite.thread.*;
@@ -36,12 +37,16 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static org.apache.ignite.internal.GridTopic.*;
+import static org.apache.ignite.internal.IgniteNodeAttributes.*;
 import static org.apache.ignite.internal.managers.communication.GridIoPolicy.*;
 
 /**
  *
  */
 public class DataStreamProcessor<K, V> extends GridProcessorAdapter {
+    /** The lowest version of ignite that is compatible with current version. */
+    private static IgniteProductVersion COMPATIBLE_VERSION_SINCE = IgniteProductVersion.fromString("1.0.4");
+
     /** Loaders map (access is not supposed to be highly concurrent). */
     private Collection<DataStreamerImpl> ldrs = new GridConcurrentHashSet<>();
 
@@ -189,25 +194,34 @@ public class DataStreamProcessor<K, V> extends GridProcessorAdapter {
             AffinityTopologyVersion locAffVer = ctx.cache().context().exchange().readyAffinityVersion();
             AffinityTopologyVersion rmtAffVer = req.topologyVersion();
 
-            if (locAffVer.compareTo(rmtAffVer) < 0) {
-                if (log.isDebugEnabled())
-                    log.debug("Received request has higher affinity topology version [request=" + req +
-                        ", locTopVer=" + locAffVer + ", rmtTopVer=" + rmtAffVer + ']');
+            if (rmtAffVer == null) {
+                IgniteProductVersion rmtVer = ctx.discovery().node(nodeId).version();
 
-                IgniteInternalFuture<?> fut = ctx.cache().context().exchange().affinityReadyFuture(rmtAffVer);
+                assert rmtVer.compareTo(COMPATIBLE_VERSION_SINCE) < 0;
+            }
+            else {
+                if (locAffVer.compareTo(rmtAffVer) < 0) {
+                    if (log.isDebugEnabled())
+                        log.debug("Received request has higher affinity topology version [request=" + req +
+                            ", locTopVer=" + locAffVer + ", rmtTopVer=" + rmtAffVer + ']');
 
-                if (fut != null && !fut.isDone()) {
-                    fut.listen(new CI1<IgniteInternalFuture<?>>() {
-                        @Override public void apply(IgniteInternalFuture<?> t) {
-                            ctx.closure().runLocalSafe(new Runnable() {
-                                @Override public void run() {
-                                    processRequest(nodeId, req);
-                                }
-                            }, false);
-                        }
-                    });
+                    IgniteInternalFuture<?> fut = ctx.cache().context().exchange().affinityReadyFuture(rmtAffVer);
 
-                    return;
+                    if (fut != null && !fut.isDone()) {
+                        fut.listen(new CI1<IgniteInternalFuture<?>>() {
+                            @Override
+                            public void apply(IgniteInternalFuture<?> t) {
+                                ctx.closure().runLocalSafe(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        processRequest(nodeId, req);
+                                    }
+                                }, false);
+                            }
+                        });
+
+                        return;
+                    }
                 }
             }
 
