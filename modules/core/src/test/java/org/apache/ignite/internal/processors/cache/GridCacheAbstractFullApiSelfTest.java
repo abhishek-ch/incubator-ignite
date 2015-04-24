@@ -2461,7 +2461,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
      * @throws Exception In case of error.
      */
     public void testRemoveAllWithNulls() throws Exception {
-        final IgniteCache<String, Integer> cache = jcache();
+       /* final IgniteCache<String, Integer> cache = jcache();
 
         final Set<String> c = new LinkedHashSet<>();
 
@@ -2507,7 +2507,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
                 return null;
             }
-        }, NullPointerException.class, null);
+        }, NullPointerException.class, null);*/
     }
 
     /**
