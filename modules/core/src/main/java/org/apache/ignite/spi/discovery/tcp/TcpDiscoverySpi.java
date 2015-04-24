@@ -2623,8 +2623,8 @@ public class TcpDiscoverySpi extends TcpDiscoverySpiAdapter implements TcpDiscov
             if (msg instanceof TcpDiscoveryJoinRequestMessage)
                 processJoinRequestMessage((TcpDiscoveryJoinRequestMessage)msg);
 
-            else if (msg instanceof TcpDiscoveryClientReconnectMessage)
-                processClientReconnectMessage((TcpDiscoveryClientReconnectMessage)msg);
+            else if (msg instanceof TcpDiscoveryClientReconnectRequest)
+                processClientReconnectMessage((TcpDiscoveryClientReconnectRequest)msg);
 
             else if (msg instanceof TcpDiscoveryNodeAddedMessage)
                 processNodeAddedMessage((TcpDiscoveryNodeAddedMessage)msg);
@@ -3428,7 +3428,7 @@ public class TcpDiscoverySpi extends TcpDiscoverySpiAdapter implements TcpDiscov
          *
          * @param msg Client reconnect message.
          */
-        private void processClientReconnectMessage(TcpDiscoveryClientReconnectMessage msg) {
+        private void processClientReconnectMessage(TcpDiscoveryClientReconnectRequest msg) {
             UUID locNodeId = getLocalNodeId();
 
             boolean isLocNodeRouter = locNodeId.equals(msg.routerNodeId());
@@ -4850,7 +4850,7 @@ public class TcpDiscoverySpi extends TcpDiscoverySpiAdapter implements TcpDiscov
                                     break;
                             }
                         }
-                        else if (msg instanceof TcpDiscoveryClientReconnectMessage) {
+                        else if (msg instanceof TcpDiscoveryClientReconnectRequest) {
                             if (client) {
                                 TcpDiscoverySpiState state = spiStateCopy();
 

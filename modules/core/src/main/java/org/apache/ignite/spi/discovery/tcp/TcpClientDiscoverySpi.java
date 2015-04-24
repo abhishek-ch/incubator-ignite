@@ -448,7 +448,7 @@ public class TcpClientDiscoverySpi extends TcpDiscoverySpiAdapter implements Tcp
                         locNode.clientRouterNodeId(rmtNodeId);
 
                         TcpDiscoveryAbstractMessage msg = recon ?
-                            new TcpDiscoveryClientReconnectMessage(getLocalNodeId(), rmtNodeId,
+                            new TcpDiscoveryClientReconnectRequest(getLocalNodeId(), rmtNodeId,
                                 lastMsgId) :
                             new TcpDiscoveryJoinRequestMessage(locNode, null);
 
@@ -859,8 +859,8 @@ public class TcpClientDiscoverySpi extends TcpDiscoverySpiAdapter implements Tcp
 
             stats.onMessageProcessingStarted(msg);
 
-            if (msg instanceof TcpDiscoveryClientReconnectMessage)
-                processClientReconnectMessage((TcpDiscoveryClientReconnectMessage)msg);
+            if (msg instanceof TcpDiscoveryClientReconnectRequest)
+                processClientReconnectMessage((TcpDiscoveryClientReconnectRequest)msg);
             else {
                 if (recon && !pending) {
                     if (log.isDebugEnabled())
@@ -1146,7 +1146,7 @@ public class TcpClientDiscoverySpi extends TcpDiscoverySpiAdapter implements Tcp
         /**
          * @param msg Message.
          */
-        private void processClientReconnectMessage(TcpDiscoveryClientReconnectMessage msg) {
+        private void processClientReconnectMessage(TcpDiscoveryClientReconnectRequest msg) {
             if (leaveLatch != null)
                 return;
 

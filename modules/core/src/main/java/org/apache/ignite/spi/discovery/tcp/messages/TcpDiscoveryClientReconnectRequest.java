@@ -26,7 +26,7 @@ import java.util.*;
 /**
  * Message telling that client node is reconnecting to topology.
  */
-public class TcpDiscoveryClientReconnectMessage extends TcpDiscoveryAbstractMessage {
+public class TcpDiscoveryClientReconnectRequest extends TcpDiscoveryAbstractMessage {
     /** */
     private static final long serialVersionUID = 0L;
 
@@ -45,7 +45,7 @@ public class TcpDiscoveryClientReconnectMessage extends TcpDiscoveryAbstractMess
      * @param routerNodeId New router node ID.
      * @param lastMsgId Last message ID.
      */
-    public TcpDiscoveryClientReconnectMessage(UUID creatorNodeId, UUID routerNodeId, IgniteUuid lastMsgId) {
+    public TcpDiscoveryClientReconnectRequest(UUID creatorNodeId, UUID routerNodeId, IgniteUuid lastMsgId) {
         super(creatorNodeId);
 
         this.routerNodeId = routerNodeId;
@@ -96,6 +96,6 @@ public class TcpDiscoveryClientReconnectMessage extends TcpDiscoveryAbstractMess
 
     /** {@inheritDoc} */
     @Override public String toString() {
-        return S.toString(TcpDiscoveryClientReconnectMessage.class, this, "super", super.toString());
+        return S.toString(TcpDiscoveryClientReconnectRequest.class, this, "super", super.toString());
     }
 }
