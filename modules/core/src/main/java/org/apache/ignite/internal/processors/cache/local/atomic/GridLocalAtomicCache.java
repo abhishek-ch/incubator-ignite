@@ -392,8 +392,8 @@ public class GridLocalAtomicCache<K, V> extends GridCacheAdapter<K, V> {
         Set<K> keys = new HashSet<>();
 
         if (ctx.offheapTiered()) {
-            for (Iterator<KeyCacheObject> it =
-                         ctx.swap().offHeapKeyIterator(true, true, AffinityTopologyVersion.NONE); it.hasNext(); )
+            for (Iterator<KeyCacheObject> it = ctx.swap().offHeapKeyIterator(true, true, AffinityTopologyVersion.NONE);
+                 it.hasNext(); )
                 keys.add((K)it.next().value(ctx.cacheObjectContext(), false));
         }
 
@@ -1383,7 +1383,6 @@ public class GridLocalAtomicCache<K, V> extends GridCacheAdapter<K, V> {
      */
     private List<GridCacheEntryEx> lockEntries(Collection<? extends K> keys) {
         List<GridCacheEntryEx> locked = new ArrayList<>(keys.size());
-
         for (K key : keys) {
             if (key == null)
                 throw new NullPointerException("Null key.");

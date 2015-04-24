@@ -882,7 +882,7 @@ public abstract class GridCacheQueryManager<K, V> extends GridCacheManagerAdapte
                 iters.add(offheapIterator(qry, parts));
 
             if (cctx.swap().swapEnabled())
-                iters.add(swapIterator(qry));
+                iters.add(swapIterator(qry, parts));
 
             it = new CompoundIterator<>(iters);
         }
@@ -916,23 +916,37 @@ public abstract class GridCacheQueryManager<K, V> extends GridCacheManagerAdapte
 
     /**
      * @param qry Query.
+     * @param parts Collection of partitions.
      * @return Swap iterator.
      * @throws IgniteCheckedException If failed.
      */
-    private GridIterator<IgniteBiTuple<K, V>> swapIterator(GridCacheQueryAdapter<?> qry)
+    private GridIterator<IgniteBiTuple<K, V>> swapIterator(GridCacheQueryAdapter<?> qry, Collection<Integer> parts)
         throws IgniteCheckedException {
         IgniteBiPredicate<K, V> filter = qry.scanFilter();
 
-        Iterator<Map.Entry<byte[], byte[]>> it = cctx.swap().rawSwapIterator();
+        Iterator<Map.Entry<byte[], byte[]>> it;
+
+        if (parts == null)
+            it = cctx.swap().rawSwapIterator();
+        else {
+            List<GridIterator<Map.Entry<byte[], byte[]>>> partIts = new ArrayList<>();
+
+            for (Integer part : parts)
+                partIts.add(cctx.swap().rawSwapIterator(part));
+
+            it = new CompoundIterator(partIts);
+        }
 
         return scanIterator(it, filter, qry.keepPortable());
     }
 
     /**
      * @param qry Query.
+     * @param parts Collection of partitions.
      * @return Offheap iterator.
+     * @throws IgniteCheckedException If failed.
      */
-    private GridIterator<IgniteBiTuple<K, V>> offheapIterator(GridCacheQueryAdapter<?> qry, Set<Integer> parts)
+    private GridIterator<IgniteBiTuple<K, V>> offheapIterator(GridCacheQueryAdapter<?> qry, Collection<Integer> parts)
         throws IgniteCheckedException {
         IgniteBiPredicate<K, V> filter = qry.scanFilter();
 

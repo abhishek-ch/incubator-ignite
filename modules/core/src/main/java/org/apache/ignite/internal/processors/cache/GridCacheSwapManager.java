@@ -1587,65 +1587,18 @@ public class GridCacheSwapManager extends GridCacheManagerAdapter {
         if (!offheapEnabled)
             return new GridEmptyCloseableIterator<>();
 
-        return new GridCloseableIteratorAdapter<Map.Entry<byte[], byte[]>>() {
-            private GridCloseableIterator<IgniteBiTuple<byte[], byte[]>> it = offheap.iterator(spaceName);
-
-            private Map.Entry<byte[], byte[]> cur;
-
-            @Override protected Map.Entry<byte[], byte[]> onNext() {
-                return cur = it.next();
-            }
-
-            @Override protected boolean onHasNext() {
-                return it.hasNext();
-            }
-
-            @Override protected void onRemove() throws IgniteCheckedException {
-                KeyCacheObject key = cctx.toCacheKeyObject(cur.getKey());
-
-                int part = cctx.affinity().partition(key);
-
-                offheap.removex(spaceName, part, key, key.valueBytes(cctx.cacheObjectContext()));
-            }
-
-            @Override protected void onClose() throws IgniteCheckedException {
-                it.close();
-            }
-        };
+        return new OffHeapIterator(offheap.iterator(spaceName));
     }
 
     /**
+     * @param part Partition.
      * @return Raw off-heap iterator.
      */
     public GridCloseableIterator<Map.Entry<byte[], byte[]>> rawOffHeapIterator(final int part) {
         if (!offheapEnabled)
             return new GridEmptyCloseableIterator<>();
 
-        return new GridCloseableIteratorAdapter<Map.Entry<byte[], byte[]>>() {
-            private GridCloseableIterator<IgniteBiTuple<byte[], byte[]>> it = offheap.iterator(spaceName, part);
-
-            private Map.Entry<byte[], byte[]> cur;
-
-            @Override protected Map.Entry<byte[], byte[]> onNext() {
-                return cur = it.next();
-            }
-
-            @Override protected boolean onHasNext() {
-                return it.hasNext();
-            }
-
-            @Override protected void onRemove() throws IgniteCheckedException {
-                KeyCacheObject key = cctx.toCacheKeyObject(cur.getKey());
-
-                int part = cctx.affinity().partition(key);
-
-                offheap.removex(spaceName, part, key, key.valueBytes(cctx.cacheObjectContext()));
-            }
-
-            @Override protected void onClose() throws IgniteCheckedException {
-                it.close();
-            }
-        };
+        return new OffHeapIterator(offheap.iterator(spaceName, part));
     }
 
     /**
@@ -1677,6 +1630,20 @@ public class GridCacheSwapManager extends GridCacheManagerAdapter {
         checkIteratorQueue();
 
         return swapMgr.rawIterator(spaceName);
+    }
+
+    /**
+     * @param part Partition.
+     * @return Raw off-heap iterator.
+     * @throws IgniteCheckedException If failed.
+     */
+    public GridCloseableIterator<Map.Entry<byte[], byte[]>> rawSwapIterator(int part) throws IgniteCheckedException {
+        if (!swapEnabled)
+            return new GridEmptyCloseableIterator<>();
+
+        checkIteratorQueue();
+
+        return swapMgr.rawIterator(spaceName, part);
     }
 
     /**
@@ -2099,5 +2066,46 @@ public class GridCacheSwapManager extends GridCacheManagerAdapter {
          */
         abstract protected Iterator<KeyCacheObject> partitionIterator(int part)
             throws IgniteCheckedException;
+    }
+
+    /**
+     * Raw off-heap iterator.
+     */
+    private class OffHeapIterator extends GridCloseableIteratorAdapter<Map.Entry<byte[], byte[]>> {
+        /** Internal off-heap iterator. */
+        private final GridCloseableIterator<IgniteBiTuple<byte[], byte[]>> it;
+
+        /** Current entry. */
+        private Map.Entry<byte[], byte[]> cur;
+
+        /**
+         * @param it Internal off-heap iterator.
+         */
+        public OffHeapIterator(GridCloseableIterator<IgniteBiTuple<byte[], byte[]>> it) {
+            this.it = it;
+        }
+
+        /** {@inheritDoc} */
+        @Override protected Map.Entry<byte[], byte[]> onNext() {
+            return cur = it.next();
+        }
+
+        /** {@inheritDoc} */
+        @Override protected boolean onHasNext() {
+            return it.hasNext();
+        }
+
+        /** {@inheritDoc} */
+        @Override protected void onRemove() throws IgniteCheckedException {
+            KeyCacheObject key = cctx.toCacheKeyObject(cur.getKey());
+            int part = cctx.affinity().partition(key);
+
+            offheap.removex(spaceName, part, key, key.valueBytes(cctx.cacheObjectContext()));
+        }
+
+        /** {@inheritDoc} */
+        @Override protected void onClose() throws IgniteCheckedException {
+            it.close();
+        }
     }
 }
