@@ -2072,6 +2072,9 @@ public class GridCacheSwapManager extends GridCacheManagerAdapter {
      * Raw off-heap iterator.
      */
     private class OffHeapIterator extends GridCloseableIteratorAdapter<Map.Entry<byte[], byte[]>> {
+        /** */
+        private static final long serialVersionUID = 0L;
+
         /** Internal off-heap iterator. */
         private final GridCloseableIterator<IgniteBiTuple<byte[], byte[]>> it;
 
