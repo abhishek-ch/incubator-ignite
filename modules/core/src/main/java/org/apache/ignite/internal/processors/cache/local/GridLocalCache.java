@@ -148,6 +148,9 @@ public class GridLocalCache<K, V> extends GridCacheAdapter<K, V> {
                     try {
                         entry = entryExx(key);
 
+                        if (ctx.offheapTiered())
+                            entry.unswap(false);
+
                         if (!ctx.isAll(entry, filter)) {
                             fut.onFailed();
 
