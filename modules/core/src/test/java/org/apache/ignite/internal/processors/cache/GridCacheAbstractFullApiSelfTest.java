@@ -22,7 +22,6 @@ import junit.framework.*;
 import org.apache.ignite.*;
 import org.apache.ignite.cache.*;
 import org.apache.ignite.cache.affinity.*;
-import org.apache.ignite.cache.query.*;
 import org.apache.ignite.cluster.*;
 import org.apache.ignite.configuration.*;
 import org.apache.ignite.events.*;
@@ -290,20 +289,20 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
                 if (ctx.affinity().localNode(key, new AffinityTopologyVersion(ctx.discovery().topologyVersion())))
                     sum++;
 
-            assertEquals("Incorrect key size on cache #" + i, sum, jcache(i).localSize(CachePeekMode.ALL));
+            assertEquals("Incorrect key size on cache #" + i, sum, jcache(i).localSize(ALL));
         }
 
         for (int i = 0; i < gridCount(); i++) {
             Collection<String> keysCol = mapped.get(grid(i).localNode());
 
             assertEquals("Failed check for grid: " + i, !F.isEmpty(keysCol) ? keysCol.size() : 0,
-                jcache(i).localSize(CachePeekMode.PRIMARY));
+                jcache(i).localSize(PRIMARY));
         }
 
         int globalPrimarySize = map.size();
 
         for (int i = 0; i < gridCount(); i++)
-            assertEquals(globalPrimarySize, jcache(i).size(CachePeekMode.PRIMARY));
+            assertEquals(globalPrimarySize, jcache(i).size(PRIMARY));
 
         int times = 1;
 
@@ -315,7 +314,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         int globalSize = globalPrimarySize * times;
 
         for (int i = 0; i < gridCount(); i++)
-            assertEquals(globalSize, jcache(i).size(CachePeekMode.ALL));
+            assertEquals(globalSize, jcache(i).size(ALL));
     }
 
     /**
@@ -2910,7 +2909,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         Ignite ignite = primaryIgnite("key");
         IgniteCache<String, Integer> cache = ignite.cache(null);
 
-        assert cache.localPeek("key", ONHEAP) == null;
+        assert peek(cache, "key") == null;
 
         cache.put("key", 1);
 
@@ -3416,7 +3415,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         Collection<String> locKeys = new HashSet<>();
 
         if (grid(0).context().cache().cache(null).context().affinityNode()) {
-            Iterable<Cache.Entry<String, Integer>> entries = cache.localEntries(CachePeekMode.PRIMARY, CachePeekMode.BACKUP);
+            Iterable<Cache.Entry<String, Integer>> entries = cache.localEntries(PRIMARY, BACKUP);
 
             for (Cache.Entry<String, Integer> entry : entries)
                 locKeys.add(entry.getKey());
@@ -3448,14 +3447,14 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         cache.localEvict(F.asList(k2, k3));
 
         if (memoryMode() == OFFHEAP_TIERED) {
-            assertNotNull(cache.localPeek(k1, ONHEAP, CachePeekMode.OFFHEAP));
-            assertNotNull(cache.localPeek(k2, ONHEAP, CachePeekMode.OFFHEAP));
-            assertNotNull(cache.localPeek(k3, ONHEAP, CachePeekMode.OFFHEAP));
+            assertNotNull(cache.localPeek(k1, ONHEAP, OFFHEAP));
+            assertNotNull(cache.localPeek(k2, ONHEAP, OFFHEAP));
+            assertNotNull(cache.localPeek(k3, ONHEAP, OFFHEAP));
         }
         else {
-            assertNotNull(cache.localPeek(k1, ONHEAP, CachePeekMode.OFFHEAP));
-            assertNull(cache.localPeek(k2, ONHEAP, CachePeekMode.OFFHEAP));
-            assertNull(cache.localPeek(k3, ONHEAP, CachePeekMode.OFFHEAP));
+            assertNotNull(cache.localPeek(k1, ONHEAP, OFFHEAP));
+            assertNull(cache.localPeek(k2, ONHEAP, OFFHEAP));
+            assertNull(cache.localPeek(k3, ONHEAP, OFFHEAP));
         }
 
         int cnt = 0;
@@ -3521,14 +3520,14 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         cache.localEvict(Collections.singleton(k3));
 
         if (memoryMode() == OFFHEAP_TIERED) {
-            assertNotNull(cache.localPeek(k1, ONHEAP, CachePeekMode.OFFHEAP));
-            assertNotNull(cache.localPeek(k2, ONHEAP, CachePeekMode.OFFHEAP));
-            assertNotNull(cache.localPeek(k3, ONHEAP, CachePeekMode.OFFHEAP));
+            assertNotNull(cache.localPeek(k1, ONHEAP, OFFHEAP));
+            assertNotNull(cache.localPeek(k2, ONHEAP, OFFHEAP));
+            assertNotNull(cache.localPeek(k3, ONHEAP, OFFHEAP));
         }
         else {
-            assertNotNull(cache.localPeek(k1, ONHEAP, CachePeekMode.OFFHEAP));
-            assertNull(cache.localPeek(k2, ONHEAP, CachePeekMode.OFFHEAP));
-            assertNull(cache.localPeek(k3, ONHEAP, CachePeekMode.OFFHEAP));
+            assertNotNull(cache.localPeek(k1, ONHEAP, OFFHEAP));
+            assertNull(cache.localPeek(k2, ONHEAP, OFFHEAP));
+            assertNull(cache.localPeek(k3, ONHEAP, OFFHEAP));
         }
 
         cache.localPromote(F.asSet(k2, k3));
@@ -3652,7 +3651,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
      */
     private void checkRemovexInTx(TransactionConcurrency concurrency, TransactionIsolation isolation) throws Exception {
         if (txEnabled()) {
-            final int cnt = 1;
+            final int cnt = 10;
 
             CU.inTx(ignite(0), jcache(), concurrency, isolation, new CIX1<IgniteCache<String, Integer>>() {
                 @Override public void applyx(IgniteCache<String, Integer> cache) {
@@ -3798,7 +3797,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
                     }
                 }
 
-                assertEquals("Incorrect size on cache #" + i, size, jcache(i).localSize(CachePeekMode.ALL));
+                assertEquals("Incorrect size on cache #" + i, size, jcache(i).localSize(ALL));
             }
         }
     }
@@ -3809,8 +3808,8 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
      */
     protected void checkKeySize(Collection<String> keys) throws Exception {
         if (nearEnabled())
-            assertEquals("Invalid key size: " + jcache().localSize(CachePeekMode.ALL),
-                keys.size(), jcache().localSize(CachePeekMode.ALL));
+            assertEquals("Invalid key size: " + jcache().localSize(ALL),
+                keys.size(), jcache().localSize(ALL));
         else {
             for (int i = 0; i < gridCount(); i++) {
                 GridCacheContext<String, Integer> ctx = context(i);
@@ -3821,7 +3820,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
                     if (ctx.affinity().localNode(key, ctx.discovery().topologyVersionEx()))
                         size++;
 
-                assertEquals("Incorrect key size on cache #" + i, size, jcache(i).localSize(CachePeekMode.ALL));
+                assertEquals("Incorrect key size on cache #" + i, size, jcache(i).localSize(ALL));
             }
         }
     }
@@ -3998,8 +3997,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         iter.remove();
 
         GridTestUtils.assertThrows(log, new Callable<Object>() {
-            @Override
-            public Void call() throws Exception {
+            @Override public Void call() throws Exception {
                 iter.remove();
 
                 return null;
@@ -4341,7 +4339,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         for (String key : keys)
             assertNull(cache.get(key));
 
-        final int KEYS = 1;
+        final int KEYS = 250;
 
         // Put/remove data from multiple nodes.
 
@@ -4421,7 +4419,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
         assertFalse(cacheSkipStore.iterator().hasNext());
         assertTrue(map.size() == 0);
-        assertTrue(cache.size(CachePeekMode.ALL) == 0);
+        assertTrue(cache.size(ALL) == 0);
 
         // putAll/removeAll from multiple nodes.
 
@@ -4510,8 +4508,8 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
         assertTrue(map.containsKey(rmvKey));
 
-        assertTrue(cache.size(CachePeekMode.ALL) == 0);
-        assertTrue(cacheSkipStore.size(CachePeekMode.ALL) == 0);
+        assertTrue(cache.size(ALL) == 0);
+        assertTrue(cacheSkipStore.size(ALL) == 0);
 
         cache.remove(rmvKey);
 
@@ -4568,7 +4566,7 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
 
             IgniteCache<String, Integer> cacheSkipStore = cache.withSkipStore();
 
-            final int KEYS = 50;
+            final int KEYS = 250;
 
             // Put/remove data from multiple nodes.
 
@@ -4582,17 +4580,17 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
             for (int i = 0; i < keys.size(); i++)
                 data.put(keys.get(i), i);
 
-            /* checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, OPTIMISTIC, READ_COMMITTED);
+            checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, OPTIMISTIC, READ_COMMITTED);
 
             checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, OPTIMISTIC, REPEATABLE_READ);
 
-            checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, OPTIMISTIC, SERIALIZABLE);*/
+            checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, OPTIMISTIC, SERIALIZABLE);
 
-            checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, PESSIMISTIC, READ_COMMITTED);
-/*
+            //checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, PESSIMISTIC, READ_COMMITTED);
+
             checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, PESSIMISTIC, REPEATABLE_READ);
 
-            checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, PESSIMISTIC, SERIALIZABLE);*/
+            checkSkipStoreWithTransaction(cache, cacheSkipStore, data, keys, PESSIMISTIC, SERIALIZABLE);
         }
     }
 
@@ -4754,8 +4752,8 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
         for (int i = 0; i < keys.size(); i++)
             putToStore(keys.get(i), i);
 
-        assertTrue(cacheSkipStore.size(CachePeekMode.ALL) == 0);
-        assertTrue(cache.size(CachePeekMode.ALL) == 0);
+        assertTrue(cacheSkipStore.size(ALL) == 0);
+        assertTrue(cache.size(ALL) == 0);
         assertTrue(map.size() != 0);
 
         try (Transaction tx = txs.txStart(txConcurrency, txIsolation)) {
@@ -4844,8 +4842,8 @@ public abstract class GridCacheAbstractFullApiSelfTest extends GridCacheAbstract
      */
     private void checkEmpty(IgniteCache<String, Integer> cache, IgniteCache<String, Integer> cacheSkipStore)
         throws Exception {
-        assertTrue(cache.size(CachePeekMode.ALL) == 0);
-        assertTrue(cacheSkipStore.size(CachePeekMode.ALL) == 0);
+        assertTrue(cache.size(ALL) == 0);
+        assertTrue(cacheSkipStore.size(ALL) == 0);
         assertTrue(map.size() == 0);
     }
 

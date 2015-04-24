@@ -175,9 +175,6 @@ public class GridCachePartitionedMultiNodeFullApiSelfTest extends GridCacheParti
      * @throws Exception If failed.
      */
     public void testUnswapShort() throws Exception {
-        if (memoryMode() == CacheMemoryMode.OFFHEAP_TIERED)
-            return;
-
         final AtomicInteger swapEvts = new AtomicInteger(0);
         final AtomicInteger unswapEvts = new AtomicInteger(0);
 
@@ -330,8 +327,7 @@ public class GridCachePartitionedMultiNodeFullApiSelfTest extends GridCacheParti
         assertEquals(0, cache1.localSize(NEAR));
         assertEquals(5, cache1.localSize(CachePeekMode.ALL) - cache1.localSize(NEAR));
 
-        assertEquals(nearEnabled() && memoryMode() != CacheMemoryMode.OFFHEAP_TIERED
-            ? 2 : 0, cache2.localSize(NEAR));
+        assertEquals(nearEnabled() ? 2 : 0, cache2.localSize(NEAR));
         assertEquals(0, cache2.localSize(CachePeekMode.ALL) - cache2.localSize(NEAR));
     }
 

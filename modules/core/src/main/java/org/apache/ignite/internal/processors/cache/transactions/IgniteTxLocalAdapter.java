@@ -2939,8 +2939,7 @@ public abstract class IgniteTxLocalAdapter extends IgniteTxAdapter
                     assert loadFut.isDone();
 
                     return nonInterruptable(commitAsync().chain(new CX1<IgniteInternalFuture<IgniteInternalTx>, GridCacheReturn>() {
-                        @Override
-                        public GridCacheReturn applyx(IgniteInternalFuture<IgniteInternalTx> txFut)
+                        @Override public GridCacheReturn applyx(IgniteInternalFuture<IgniteInternalTx> txFut)
                             throws IgniteCheckedException {
                             txFut.get();
 
